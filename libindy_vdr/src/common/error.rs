@@ -45,6 +45,8 @@ pub enum VdrErrorKind {
     PoolRequestFailed(String),
     #[error("Pool timeout")]
     PoolTimeout,
+    #[error("Not Found")]
+    NotFound,
 }
 
 impl VdrError {

@@ -17,6 +17,7 @@ use super::{
     RequestResult, TimingResult,
 };
 use crate::state_proof::types::ParsedSP;
+use crate::ledger::ResponseParser;
 
 pub async fn handle_consensus_request<Request: PoolRequest>(
     mut request: Request,
@@ -197,53 +198,6 @@ impl Hash for NodeResponse {
 }
 
 pub fn get_last_signed_time(reply_result: &SJsonValue) -> Option<u64> {
-    let c = parse_reply_metadata(reply_result);
+    let c = ResponseParser::parse_reply_metadata(reply_result);
     c.ok().and_then(|resp| resp.last_txn_time)
-}
-
-pub fn parse_reply_metadata(reply_result: &SJsonValue) -> VdrResult<ResponseMetadata> {
-    let response_metadata = match reply_result["ver"].as_str() {
-        None => parse_transaction_metadata_v0(reply_result),
-        Some("1") => parse_transaction_metadata_v1(reply_result),
-        ver => {
-            return Err(input_err(format!(
-                "Unsupported transaction response version: {:?}",
-                ver
-            )))
-        }
-    };
-
-    trace!(
-        "parse_response_metadata >> response_metadata: {:?}",
-        response_metadata
-    );
-
-    Ok(response_metadata)
-}
-
-fn parse_transaction_metadata_v0(message: &SJsonValue) -> ResponseMetadata {
-    ResponseMetadata {
-        seq_no: message["seqNo"].as_u64(),
-        txn_time: message["txnTime"].as_u64(),
-        last_txn_time: message["state_proof"]["multi_signature"]["value"]["timestamp"].as_u64(),
-        last_seq_no: None,
-    }
-}
-
-fn parse_transaction_metadata_v1(message: &SJsonValue) -> ResponseMetadata {
-    ResponseMetadata {
-        seq_no: message["txnMetadata"]["seqNo"].as_u64(),
-        txn_time: message["txnMetadata"]["txnTime"].as_u64(),
-        last_txn_time: message["multiSignature"]["signedState"]["stateMetadata"]["timestamp"]
-            .as_u64(),
-        last_seq_no: None,
-    }
-}
-
-#[derive(Debug)]
-pub struct ResponseMetadata {
-    pub seq_no: Option<u64>,
-    pub txn_time: Option<u64>,
-    pub last_txn_time: Option<u64>,
-    pub last_seq_no: Option<u64>,
 }

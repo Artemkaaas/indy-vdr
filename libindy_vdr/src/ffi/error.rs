@@ -24,6 +24,7 @@ pub enum ErrorCode {
     PoolNoConsensus = 30,
     PoolRequestFailed = 31,
     PoolTimeout = 32,
+    NotFound = 33,
 }
 
 impl From<&VdrErrorKind> for ErrorCode {
@@ -37,6 +38,7 @@ impl From<&VdrErrorKind> for ErrorCode {
             VdrErrorKind::Unavailable => ErrorCode::Unavailable,
             VdrErrorKind::Unexpected => ErrorCode::Unexpected,
             VdrErrorKind::Incompatible => ErrorCode::Incompatible,
+            VdrErrorKind::NotFound => ErrorCode::NotFound,
             VdrErrorKind::PoolNoConsensus => ErrorCode::PoolNoConsensus,
             VdrErrorKind::PoolRequestFailed(_) => ErrorCode::PoolRequestFailed,
             VdrErrorKind::PoolTimeout => ErrorCode::PoolTimeout,
